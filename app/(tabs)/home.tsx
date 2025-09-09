@@ -24,10 +24,11 @@ interface Message {
 const getMockAiResponse = (message: string): Message => {
   return {
     id: Math.random().toString(),
-    text: `That's an interesting thought! For now, I'm just a simple AI. You said: "${message}"`,
-    sender: 'ai',
+    text: `That's an interesting thought! For now, I'm just a simple AI. You said: "${String(message)}"`,
+    sender: "ai",
   };
 };
+
 
 export default function HomeScreen() {
   const navigation = useNavigation();

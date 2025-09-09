@@ -1,5 +1,3 @@
-// app/_layout.tsx
-
 import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
@@ -9,24 +7,26 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import 'react-native-reanimated';
 
-// Import icons
+// Import icons and AuthContext
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../auth-context';
 
 // --- Constants for better maintainability ---
 const { width } = Dimensions.get('window');
 
 const COLORS = {
-  background: '#232428',
-  backgroundSecondary: '#2f3136',
+  background: '#121212',
+  backgroundSecondary: '#212121',
   textPrimary: '#ffffff',
-  textSecondary: '#b9bbbe',
+  textSecondary: '#a0a0a0',
   active: '#ffffff',
-  inactive: '#b9bbbe',
-  online: '#3ba55d',
+  inactive: '#808080',
+  online: '#4caf50',
+  accent: '#bb86fc', // Minimalist accent color
 };
 
 const SPACING = {
@@ -39,41 +39,56 @@ const SPACING = {
 
 // --- Custom Drawer Content Component ---
 function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const { user, signOut } = useAuth();
+
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, backgroundColor: COLORS.background }}>
-      {/* Encapsulate content to use flexbox for layout */}
       <View style={styles.drawerContentContainer}>
         {/* Top Section: Logo and Navigation Items */}
-        <View>
+        <View style={styles.topSection}>
           <View style={styles.logoContainer}>
-            <Image
-              source={require('../../assets/images/Aiktadark.png')} // Replace with your logo path
-              style={styles.logo}
-            />
+            <Ionicons name="sparkles" size={40} color={COLORS.accent} />
             <Text style={styles.logoText}>Aikta</Text>
           </View>
           <DrawerItemList {...props} />
         </View>
 
         {/* Bottom Section: User Profile */}
-        <View style={styles.userSection}>
-          <View style={styles.userInfo}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={require('../../assets/images/Aiktadark.png')} // Replace with your user avatar path
-                style={styles.avatar}
-              />
-              <View style={styles.statusIndicator} />
+        {user ? (
+          <View style={styles.userSection}>
+            <View style={styles.userInfo}>
+              <View style={styles.avatarContainer}>
+                <Ionicons name="person-circle-outline" size={32} color={COLORS.textPrimary} />
+                <View style={[styles.statusIndicator, { backgroundColor: COLORS.online }]} />
+              </View>
+              <View>
+                <Text style={styles.username}>{user.email}</Text>
+                <Text style={styles.userTag}>#{user.uid.substring(0, 4)}</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.username}>Username</Text>
-              <Text style={styles.userTag}>#1234</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <TouchableOpacity onPress={signOut} style={{marginRight: SPACING.md}}>
+                <Ionicons name="log-out-outline" size={24} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Ionicons name="settings-outline" size={24} color={COLORS.textSecondary} />
+              </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity>
-            <Ionicons name="settings-outline" size={24} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.userSection}>
+            <View style={styles.userInfo}>
+              <Ionicons name="person-circle-outline" size={32} color={COLORS.textSecondary} />
+              <View>
+                <Text style={styles.username}>Guest</Text>
+                <Text style={styles.userTag}>Not Logged In</Text>
+              </View>
+            </View>
+            <TouchableOpacity>
+              <Ionicons name="settings-outline" size={24} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </DrawerContentScrollView>
   );
@@ -83,7 +98,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
+    // Use system default fonts for a cleaner look
+    'SystemFont': require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   if (!loaded) {
@@ -96,23 +112,24 @@ export default function RootLayout() {
         drawerContent={(props) => <CustomDrawerContent {...props} />}
         screenOptions={{
           headerShown: false,
-          drawerType: 'slide', // 'front' or 'slide' for different animation feel
+          drawerType: 'slide',
           overlayColor: 'transparent',
           drawerStyle: {
-            width: '75%', // Slightly wider for better spacing
+            width: '75%',
             backgroundColor: COLORS.background,
             borderTopRightRadius: SPACING.lg,
             borderBottomRightRadius: SPACING.lg,
           },
           sceneContainerStyle: {
-            backgroundColor: 'black', // Keeps the main screen dark
+            backgroundColor: 'black',
           },
           drawerActiveTintColor: COLORS.active,
           drawerInactiveTintColor: COLORS.inactive,
           drawerLabelStyle: {
-            fontFamily: 'SpaceMono',
+            // Use system fonts for a cleaner look
+            fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
             fontSize: 16,
-            marginLeft: -SPACING.md, // Adjust to align with icon
+            marginLeft: -SPACING.md,
           },
           drawerItemStyle: {
             borderRadius: SPACING.sm,
@@ -146,27 +163,27 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   drawerContentContainer: {
     flex: 1,
-    justifyContent: 'space-between', // Pushes user section to the bottom
+    justifyContent: 'space-between',
     paddingBottom: SPACING.lg,
   },
+  topSection: {
+    // Top section container
+  },
   logoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.xl,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.backgroundSecondary,
     marginBottom: SPACING.md,
-  },
-  logo: {
-    width: 52,
-    height: 52,
-    marginBottom: SPACING.sm,
-    borderRadius: SPACING.md,
+    justifyContent: 'center',
   },
   logoText: {
     color: COLORS.textPrimary,
     fontSize: 22,
     fontWeight: 'bold',
-    fontFamily: 'SpaceMono',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    marginLeft: SPACING.sm,
   },
   userSection: {
     flexDirection: 'row',
@@ -176,7 +193,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.backgroundSecondary,
-    backgroundColor: 'rgba(0,0,0,0.1)', // Slightly different background for user panel
   },
   userInfo: {
     flexDirection: 'row',
@@ -185,16 +201,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginRight: SPACING.md,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
   statusIndicator: {
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: COLORS.online,
     position: 'absolute',
     bottom: -2,
     right: -2,
@@ -204,12 +214,12 @@ const styles = StyleSheet.create({
   username: {
     color: COLORS.textPrimary,
     fontSize: 16,
-    fontFamily: 'SpaceMono',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
     fontWeight: '600',
   },
   userTag: {
     color: COLORS.textSecondary,
     fontSize: 12,
-    fontFamily: 'SpaceMono',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
 });

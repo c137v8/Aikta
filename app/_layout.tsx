@@ -1,14 +1,13 @@
-// app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
-import { useState, useEffect } from 'react';
-import { View } from 'react-native';
 
-import Splash from './splash'; // ✅ your splash component
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider, useAuth } from './auth-context';
+import Splash from './splash';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -20,25 +19,45 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      // Show splash for a bit even after fonts load
       const timer = setTimeout(() => {
         setIsSplashVisible(false);
-      }, 2000); // ⏳ adjust duration (ms) if you want
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [loaded]);
 
   if (!loaded || isSplashVisible) {
-    return <Splash />; // ✅ show splash until fonts + timer done
+    return <Splash />;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <LayoutContent />
+      </ThemeProvider>
       <StatusBar style="auto" />
-    </ThemeProvider>
+    </AuthProvider>
+  );
+}
+
+function LayoutContent() {
+  const { user, loading } = useAuth();
+
+  // If we are still checking the auth state, show a loading indicator.
+  if (loading) {
+    return <Splash />;
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {user ? (
+        // If the user is authenticated, show the main app tabs
+        <Stack.Screen name="(tabs)" />
+      ) : (
+        // If not authenticated, show the login screen
+        <Stack.Screen name="login" />
+      )}
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
