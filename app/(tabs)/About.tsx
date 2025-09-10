@@ -28,7 +28,6 @@ export default function HomeScreen() {
       {/* Content */}
       <View style={styles.content}>
         <Text style={styles.title}>what can you do?</Text>
-asdf
 
       </View>
 
