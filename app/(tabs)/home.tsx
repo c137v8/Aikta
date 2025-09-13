@@ -13,28 +13,30 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Mock data for the messages
+// Message interface
 interface Message {
   id: string;
   text: string;
   sender: string;
 }
 
-// Mock AI response function
+// Mock AI response
 const getMockAiResponse = (message: string): Message => {
   return {
     id: Math.random().toString(),
-    text: `That's an interesting thought! For now, I'm just a simple AI. You said: "${String(message)}"`,
+    text: `That's an interesting thought! For now, I'm just a simple AI. You said: "${String(
+      message
+    )}"`,
     sender: "ai",
   };
 };
-
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [aura, setAura] = useState(51);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [hasSentMessage, setHasSentMessage] = useState(false); // 👈 track first message
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList<Message>>(null);
 
@@ -47,22 +49,20 @@ export default function HomeScreen() {
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
 
-    // Add user's message to the messages array
+    if (!hasSentMessage) setHasSentMessage(true);
+
     const userMessage: Message = {
       id: Math.random().toString(),
       text: inputValue.trim(),
       sender: "user",
     };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    // Clear input field
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
 
-    // Simulate a delay before the AI responds
     setTimeout(() => {
       const aiResponse = getMockAiResponse(userMessage.text);
-      setMessages((prevMessages) => [...prevMessages, aiResponse]);
-    }, 1500); // 1.5 seconds delay for AI response
+      setMessages((prev) => [...prev, aiResponse]);
+    }, 1500);
   };
 
   const renderMessageItem = ({ item }: { item: Message }) => {
@@ -102,14 +102,22 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Keyboard Avoiding View to handle keyboard visibility */}
+      {/* Chat Section */}
       <KeyboardAvoidingView
         style={styles.avoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
       >
-        {/* Chat Messages */}
         <View style={styles.chatContainer}>
+          {/* 👇 Background text before first message */}
+          {!hasSentMessage && (
+            <View style={styles.backgroundTextContainer}>
+              <Text style={styles.backgroundText}>
+                Send a message to start the conversation 
+              </Text>
+            </View>
+          )}
+
           <FlatList
             ref={flatListRef}
             data={messages}
@@ -121,7 +129,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Input Box and Send Button */}
+        {/* Input */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
@@ -179,7 +187,7 @@ const styles = StyleSheet.create({
   },
   messageListContent: {
     flexGrow: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingBottom: 20,
   },
   messageBubble: {
@@ -238,5 +246,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  // 👇 Background text
+  backgroundTextContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  backgroundText: {
+    color: "#444",
+    fontSize: 16,
+    textAlign: "center",
+  },
 });
-

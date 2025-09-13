@@ -2,13 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAuth } from "./auth-context";
 
@@ -75,9 +75,9 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
-        <Link href="/(tabs)/About" asChild>
+        <Link href="/auth/signInScreen" asChild>
           <TouchableOpacity style={styles.guestButton}>
-            <Text style={styles.guestButtonText}>Continue as Guest</Text>
+            <Text style={styles.guestButtonText}>Create a new user</Text>
           </TouchableOpacity>
         </Link>
       </View>

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AuthProvider, useAuth } from './auth-context';
+import { AuthProvider, useAuth } from './auth/auth-context';
 import Splash from './splash';
 
 export default function RootLayout() {
@@ -55,7 +55,7 @@ function LayoutContent() {
         <Stack.Screen name="(tabs)" />
       ) : (
         // If not authenticated, show the login screen
-        <Stack.Screen name="login" />
+        <Stack.Screen name="auth/login" />
       )}
       <Stack.Screen name="+not-found" />
     </Stack>
